@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Book Travel</h2>
+  
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">
+        <i class="fas fa-{% if travel_option.type == 'flight' %}plane{% elif travel_option.type == 'train' %}train{% else %}bus{% endif %} text-primary"></i>
+        {{ travel_option.type|title }} - {{ travel_option.source }} to {{ travel_option.destination }}
+        {% if travel_option.available_seats <= 10 %}
+          <span class="badge bg-warning ms-2">🔥 Limited Seats!</span>
+        {% endif %}
+      </h5>
+      
+      <div class="row">
+        <div class="col-md-8">
+          <p class="card-text">
+            <strong><i class="fas fa-calendar text-info"></i> Date:</strong> {{ travel_option.date_time|date:"M d, Y H:i" }}<br>
+            <strong><i class="fas fa-dollar-sign text-success"></i> Price per seat:</strong> ${{ travel_option.price }}<br>
+            <strong><i class="fas fa-users text-warning"></i> Available Seats:</strong> 
+            <span class="{% if travel_option.available_seats <= 10 %}text-warning fw-bold{% else %}text-success{% endif %}">
+              {{ travel_option.available_seats }}
+              {% if travel_option.available_seats <= 5 %}
+                <i class="fas fa-fire text-danger"></i>
+              {% endif %}
+            </span>
+          </p>
+          
+          {% if travel_option.available_seats <= 10 %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i> 
+              <strong>Hurry!</strong> Only {{ travel_option.available_seats }} seats remaining. Book now to secure your spot!
+            </div>
+          {% endif %}
+        </div>
+        <div class="col-md-4">
+          <div class="card bg-light">
+            <div class="card-body text-center">
+              <h6 class="card-title">💡 Did you know?</h6>
+              <small class="text-muted">
+                {% if travel_option.type == 'flight' %}
+                  ✈️ Flights offer the fastest travel time
+                {% elif travel_option.type == 'train' %}
+                  🚆 Trains provide scenic views and comfort
+                {% else %}
+                  🚌 Buses are the most economical option
+                {% endif %}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <form method="POST" id="bookingForm">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+          <label for="seats">Number of Seats:</label>
+          <input type="number" id="seats" name="seats" min="1" max="{{ travel_option.available_seats }}" value="1" class="form-control" required onchange="updateTotal()">
+          <div class="form-text">Maximum {{ travel_option.available_seats }} seats available</div>
+        </div>
+        
+        <!-- Real-time price calculation -->
+        <div class="card bg-info text-white mb-3">
+          <div class="card-body">
+            <h5 class="card-title">💰 Booking Summary</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-1">Price per seat: <strong>${{ travel_option.price }}</strong></p>
+                <p class="mb-1">Number of seats: <strong><span id="selectedSeats">1</span></strong></p>
+              </div>
+              <div class="col-md-6">
+                <p class="mb-0">Total Amount: <strong><span id="totalPrice">${{ travel_option.price }}</span></strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn {% if travel_option.available_seats <= 10 %}btn-warning{% else %}btn-success{% endif %} flex-fill">
+            <i class="fas fa-ticket-alt"></i> 
+            {% if travel_option.available_seats <= 5 %}
+              🔥 Book Now - Fast!
+            {% else %}
+              Confirm Booking
+            {% endif %}
+          </button>
+          <a href="{% url 'travel_options' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Options
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function updateTotal() {
+      const seats = document.getElementById('seats').value;
+      const pricePerSeat = {{ travel_option.price }};
+      const total = seats * pricePerSeat;
+      
+      document.getElementById('selectedSeats').textContent = seats;
+      document.getElementById('totalPrice').textContent = '$' + total.toFixed(2);
+    }
+  </script>
+{% endblock %}

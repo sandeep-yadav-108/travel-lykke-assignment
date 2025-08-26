@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Available Travel Options</h2>
+
+<form method="GET" class="mb-4">
+    <div class="row">
+        <div class="col-md-3">
+            <select name="type" class="form-control">
+                <option value="">All Types</option>
+                <option value="flight">Flight</option>
+                <option value="train">Train</option>
+                <option value="bus">Bus</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="source" class="form-control" placeholder="Source" value="{{ request.GET.source }}">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="destination" class="form-control" placeholder="Destination" value="{{ request.GET.destination }}">
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="date" class="form-control" value="{{ request.GET.date }}">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Search</button>
+</form>
+
+{% if options %}
+    <div class="row">
+        {% for option in options %}
+            <div class="col-md-6 mb-3">
+                <div class="card {% if option.available_seats <= 10 %}border-warning{% elif option.available_seats == 0 %}border-danger{% else %}border-success{% endif %}">
+                    {% if option.available_seats <= 10 and option.available_seats > 0 %}
+                        <div class="card-header bg-warning text-dark">
+                            <small><i class="fas fa-exclamation-triangle"></i> Only {{ option.available_seats }} seats left!</small>
+                        </div>
+                    {% elif option.available_seats == 0 %}
+                        <div class="card-header bg-danger text-white">
+                            <small><i class="fas fa-times-circle"></i> SOLD OUT</small>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-{% if option.type == 'flight' %}plane{% elif option.type == 'train' %}train{% else %}bus{% endif %} text-primary"></i>
+                            {{ option.type|title }} - {{ option.source }} to {{ option.destination }}
+                        </h5>
+                        <p class="card-text">
+                            <strong><i class="fas fa-calendar text-info"></i> Date:</strong> {{ option.date_time|date:"M d, Y H:i" }}<br>
+                            <strong><i class="fas fa-dollar-sign text-success"></i> Price:</strong> ${{ option.price }}<br>
+                            <strong><i class="fas fa-users text-warning"></i> Available Seats:</strong> 
+                            <span class="{% if option.available_seats <= 10 and option.available_seats > 0 %}text-warning fw-bold{% elif option.available_seats == 0 %}text-danger fw-bold{% else %}text-success{% endif %}">
+                                {{ option.available_seats }}
+                                {% if option.available_seats <= 10 and option.available_seats > 0 %}
+                                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                                {% endif %}
+                            </span>
+                        </p>
+                        
+                        {% if option.available_seats > 0 %}
+                            <div class="alert alert-light border-0 p-2 mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Perfect for {% if option.type == 'flight' %}business trips{% elif option.type == 'train' %}scenic journeys{% else %}budget travel{% endif %}
+                                </small>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="btn-group w-100" role="group">
+                            <a href="{% url 'travel_detail' option.travel_id %}" class="btn btn-outline-info flex-fill">
+                                <i class="fas fa-eye"></i> Details
+                            </a>
+                            {% if option.available_seats > 0 %}
+                                <a href="{% url 'book_travel' option.travel_id %}" class="btn btn-success flex-fill">
+                                    <i class="fas fa-ticket-alt"></i> Book Now
+                                </a>
+                            {% else %}
+                                <button class="btn btn-secondary flex-fill" disabled>
+                                    <i class="fas fa-times"></i> Sold Out
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No travel options found.</p>
+{% endif %}
+{% endblock %}

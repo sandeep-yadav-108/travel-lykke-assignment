@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card shadow">
+      <div class="card-header bg-info text-white">
+        <h3><i class="fas fa-{{ travel_option.type }}"></i> {{ travel_option.type|title }} Details</h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h5><i class="fas fa-map-marker-alt text-success"></i> Route</h5>
+            <p class="lead">{{ travel_option.source }} <i class="fas fa-arrow-right"></i> {{ travel_option.destination }}</p>
+            
+            <h5><i class="fas fa-calendar-alt text-primary"></i> Travel Date & Time</h5>
+            <p class="lead">{{ travel_option.date_time|date:"l, F d, Y \a\t H:i" }}</p>
+          </div>
+          <div class="col-md-6">
+            <h5><i class="fas fa-dollar-sign text-success"></i> Price per Seat</h5>
+            <p class="lead text-success">${{ travel_option.price }}</p>
+            
+            <h5><i class="fas fa-users text-warning"></i> Available Seats</h5>
+            <p class="lead">{{ travel_option.available_seats }} seats available</p>
+            
+            <!-- Seat availability progress bar -->
+            {% if travel_option.available_seats > 0 %}
+              <div class="mb-3">
+                <small class="text-muted">Seat Availability</small>
+                <div class="progress" style="height: 10px;">
+                  {% with percentage=travel_option.available_seats|floatformat:0 %}
+                    {% if travel_option.available_seats <= 10 %}
+                      <div class="progress-bar bg-danger" style="width: {{ travel_option.available_seats }}0%"></div>
+                    {% elif travel_option.available_seats <= 50 %}
+                      <div class="progress-bar bg-warning" style="width: {{ travel_option.available_seats }}%"></div>
+                    {% else %}
+                      <div class="progress-bar bg-success" style="width: 100%"></div>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+                {% if travel_option.available_seats <= 10 %}
+                  <small class="text-danger"><i class="fas fa-fire"></i> High demand! Limited seats remaining</small>
+                {% elif travel_option.available_seats <= 50 %}
+                  <small class="text-warning"><i class="fas fa-clock"></i> Filling up fast</small>
+                {% else %}
+                  <small class="text-success"><i class="fas fa-check"></i> Plenty of seats available</small>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <h5><i class="fas fa-info-circle text-info"></i> Travel Information</h5>
+            <ul class="list-unstyled">
+              <li><strong>Travel Type:</strong> {{ travel_option.type|title }}</li>
+              <li><strong>Travel ID:</strong> #{{ travel_option.travel_id }}</li>
+              <li><strong>Status:</strong> 
+                {% if travel_option.available_seats > 0 %}
+                  <span class="badge bg-success">Available</span>
+                {% else %}
+                  <span class="badge bg-danger">Sold Out</span>
+                {% endif %}
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <div class="text-center">
+              {% if travel_option.available_seats > 0 %}
+                <a href="{% url 'book_travel' travel_option.travel_id %}" class="btn btn-success btn-lg">
+                  <i class="fas fa-ticket-alt"></i> Book Now
+                </a>
+              {% else %}
+                <button class="btn btn-secondary btn-lg" disabled>
+                  <i class="fas fa-times"></i> Sold Out
+                </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header bg-secondary text-white">
+        <h5><i class="fas fa-search"></i> Other Options</h5>
+      </div>
+      <div class="card-body">
+        <a href="{% url 'travel_options' %}" class="btn btn-outline-primary btn-block mb-2">
+          <i class="fas fa-list"></i> View All Travel Options
+        </a>
+        <a href="{% url 'travel_options' %}?type={{ travel_option.type }}" class="btn btn-outline-info btn-block mb-2">
+          <i class="fas fa-filter"></i> More {{ travel_option.type|title }}s
+        </a>
+        <a href="{% url 'travel_options' %}?source={{ travel_option.source }}" class="btn btn-outline-warning btn-block">
+          <i class="fas fa-map-marker-alt"></i> From {{ travel_option.source }}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
