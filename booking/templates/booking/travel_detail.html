@@ -94,7 +94,16 @@
           <i class="fas fa-list"></i> View All Travel Options
         </a>
         <a href="{% url 'travel_options' %}?type={{ travel_option.type }}" class="btn btn-outline-info btn-block mb-2">
-          <i class="fas fa-filter"></i> More {{ travel_option.type|title }}s
+          <i class="fas fa-filter"></i> More 
+          {% if travel_option.type == 'bus' %}
+            Buses
+          {% elif travel_option.type == 'train' %}
+            Trains
+          {% elif travel_option.type == 'flight' %}
+            Flights
+          {% else %}
+            {{ travel_option.type|title }}s
+          {% endif %}
         </a>
         <a href="{% url 'travel_options' %}?source={{ travel_option.source }}" class="btn btn-outline-warning btn-block">
           <i class="fas fa-map-marker-alt"></i> From {{ travel_option.source }}
